@@ -6,14 +6,9 @@ build-backend = "setuptools.build_meta"
 name = "audio-transcriber"
 version = "0.1.0"
 description = "Audio extraction and transcription utility"
-requires-python = ">=3.8,<3.13"
+requires-python = ">=3.8,<3.14"
 dependencies = [
-    "ffmpeg-python>=0.2.0",
-    "pydub>=0.25.1",
-    "numpy>=1.21.0",
-    "tqdm>=4.65.0",
-    "click",
-    "pyaudioop"
+    "click>=8.0.0"
 ]
 
 [tool.setuptools.packages.find]
@@ -41,4 +36,4 @@ python_version = "3.9"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
-disallow_untyped_defs = true 
+disallow_untyped_defs = true

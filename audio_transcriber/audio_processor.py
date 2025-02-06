@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import List
 import subprocess
 import ffmpeg
-from pydub import AudioSegment
 from tqdm import tqdm
 
 class AudioProcessor:
@@ -12,34 +11,24 @@ class AudioProcessor:
         self.output_dir = output_dir
         Path(output_dir).mkdir(parents=True, exist_ok=True)
         
-    def extract_audio(self) -> str:
-        """Extract audio from video file if input is mp4."""
-        print(f"Processing file: {self.input_file}")
-        
-        if self.input_file.endswith('.mp4'):
-            print("Extracting audio from video...")
-            output_path = os.path.join(self.output_dir, "extracted_audio.wav")
-            
-            try:
-                stream = ffmpeg.input(self.input_file)
-                stream = ffmpeg.output(stream, output_path, acodec='pcm_s16le', ac=1, ar='16k')
-                ffmpeg.run(stream, capture_stdout=True, capture_stderr=True)
-                return output_path
-            except ffmpeg.Error as e:
-                print('stdout:', e.stdout.decode('utf8'))
-                print('stderr:', e.stderr.decode('utf8'))
-                raise e
-        return self.input_file
-
-    def convert_to_wav(self, audio_path: str) -> str:
-        """Convert audio to WAV format if needed."""
-        if not audio_path.endswith('.wav'):
-            print("Converting to WAV format...")
-            audio = AudioSegment.from_file(audio_path)
-            wav_path = os.path.join(self.output_dir, "converted_audio.wav")
-            audio.export(wav_path, format="wav")
-            return wav_path
-        return audio_path
+    def _convert_with_ffmpeg(self, input_path: str, output_path: str) -> None:
+        """Convert audio using ffmpeg with specified parameters."""
+        try:
+            stream = ffmpeg.input(input_path)
+            stream = ffmpeg.output(
+                stream, 
+                output_path,
+                acodec='pcm_s16le',  # 16-bit PCM
+                ac=1,                # mono
+                ar='16k',            # 16kHz sample rate
+                loglevel='info'      # show progress
+            )
+            ffmpeg.run(stream)
+            print(f"Converted to: {output_path}")
+        except ffmpeg.Error as e:
+            print('stdout:', e.stdout.decode('utf8'))
+            print('stderr:', e.stderr.decode('utf8'))
+            raise e
 
     def split_audio(self, audio_path: str, max_size_mb: int = 25) -> List[str]:
         """Split audio into chunks if larger than max_size_mb."""
@@ -49,20 +38,35 @@ class AudioProcessor:
             return [audio_path]
 
         print(f"File size ({file_size:.2f}MB) exceeds {max_size_mb}MB. Splitting into chunks...")
-        audio = AudioSegment.from_wav(audio_path)
         
-        # Calculate duration for each chunk (approximate)
-        total_duration = len(audio)
-        chunk_duration = int((max_size_mb / file_size) * total_duration)
+        # Get audio duration using ffprobe
+        probe = ffmpeg.probe(audio_path)
+        duration = float(probe['streams'][0]['duration'])
+        
+        # Calculate number of chunks needed
+        num_chunks = int((file_size / max_size_mb) + 0.5)  # Round up
+        chunk_duration = duration / num_chunks
         
         chunks = []
-        for i, start in enumerate(range(0, total_duration, chunk_duration)):
-            end = min(start + chunk_duration, total_duration)
-            chunk = audio[start:end]
+        for i in range(num_chunks):
+            start_time = i * chunk_duration
             chunk_path = os.path.join(self.output_dir, f"chunk_{i+1}.wav")
-            chunk.export(chunk_path, format="wav")
-            chunks.append(chunk_path)
             
+            try:
+                stream = ffmpeg.input(audio_path, ss=start_time, t=chunk_duration)
+                stream = ffmpeg.output(
+                    stream,
+                    chunk_path,
+                    acodec='pcm_s16le',
+                    ac=1,
+                    ar='16k'
+                )
+                ffmpeg.run(stream, capture_stdout=True, capture_stderr=True)
+                chunks.append(chunk_path)
+            except ffmpeg.Error as e:
+                print(f"Error splitting chunk {i+1}: {str(e)}")
+                raise
+        
         print(f"Split into {len(chunks)} chunks")
         return chunks
 
@@ -93,16 +97,16 @@ def main():
     input_file = "jnr-cduk-irv (2023-03-06 17_15 GMT+3).mp4"
     processor = AudioProcessor(input_file)
     
-    # Step 1 & 2: Extract audio from video
-    audio_path = processor.extract_audio()
+    # Convert to WAV if needed
+    if not input_file.endswith('.wav'):
+        output_path = os.path.join(processor.output_dir, "input.wav")
+        processor._convert_with_ffmpeg(input_file, output_path)
+        input_file = output_path
     
-    # Step 3: Convert to WAV
-    wav_path = processor.convert_to_wav(audio_path)
+    # Split if necessary
+    audio_chunks = processor.split_audio(input_file)
     
-    # Step 4: Split if necessary
-    audio_chunks = processor.split_audio(wav_path)
-    
-    # Step 5 & 6: Transcribe and save results
+    # Transcribe and save results
     processor.transcribe_audio(audio_chunks)
 
 if __name__ == "__main__":
