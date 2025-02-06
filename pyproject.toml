@@ -21,6 +21,7 @@ include = ["audio_transcriber*"]
 
 [project.scripts]
 audio-transcriber = "audio_transcriber.audio_processor:main"
+convert-audio = "audio_transcriber.audio_converter:main"
 
 [tool.black]
 line-length = 100
