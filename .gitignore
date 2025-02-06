@@ -34,14 +34,10 @@ ENV/
 # Project specific
 *.wav
 *.mp3
-*.pcm
-request_data/
-*.log
+*.mp4
+config.local.ini
+.env
 
-# Config files with sensitive data
-# Uncomment if you don't want to track config.ini
-config.ini
-
-# OS specific
+# OS
 .DS_Store
 Thumbs.db 
