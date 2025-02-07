@@ -40,4 +40,8 @@ config.local.ini
 
 # OS
 .DS_Store
-Thumbs.db 
+Thumbs.db
+
+# Additional files
+output/
+ffmpeg.zip 

@@ -8,7 +8,8 @@ version = "0.1.0"
 description = "Audio extraction and transcription utility"
 requires-python = ">=3.8,<3.14"
 dependencies = [
-    "click>=8.0.0"
+    "click>=8.0.0",
+    "tqdm>=4.65.0"
 ]
 
 [tool.setuptools.packages.find]
