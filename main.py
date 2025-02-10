@@ -1,25 +1,33 @@
-import click
+import argparse
+import os
 from pathlib import Path
 from audio_transcriber.audio_processor import AudioProcessor
 
-@click.command()
-@click.argument('input_file', type=click.Path(exists=True))
-@click.option('--output-dir', default='output', help='Directory to save the transcription results')
-def main(input_file: str, output_dir: str):
+def main():
     """Process audio/video file and generate transcription.
     
     Supports mp4, mp3, and wav files.
     """
-    processor = AudioProcessor(input_file, output_dir)
+    parser = argparse.ArgumentParser(description='Process audio/video file and generate transcription.')
+    parser.add_argument('input_file', type=str, help='Path to the input audio/video file')
+    parser.add_argument('--output-dir', default='output', help='Directory to save the transcription results')
+    
+    args = parser.parse_args()
+    
+    # Validate input file exists
+    if not os.path.exists(args.input_file):
+        parser.error(f"Input file does not exist: {args.input_file}")
+    
+    processor = AudioProcessor(args.input_file, args.output_dir)
     
     # Convert to WAV if needed
-    if not input_file.lower().endswith('.wav'):
-        wav_path = str(Path(output_dir) / "input.wav")
-        processor._convert_to_wav(input_file, wav_path)
-        input_file = wav_path
+    if not args.input_file.lower().endswith('.wav'):
+        wav_path = str(Path(args.output_dir) / "input.wav")
+        processor._convert_to_wav(args.input_file, wav_path)
+        args.input_file = wav_path
     
     # Split if necessary and transcribe
-    audio_chunks = processor.split_audio(input_file)
+    audio_chunks = processor.split_audio(args.input_file)
     processor.transcribe_audio(audio_chunks)
 
 if __name__ == "__main__":

@@ -3,12 +3,16 @@ from pathlib import Path
 from typing import List
 import subprocess
 from tqdm import tqdm
+from datetime import datetime
 
 class AudioProcessor:
     def __init__(self, input_file: str, output_dir: str = "output"):
         self.input_file = input_file
         self.output_dir = output_dir
+        self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.transcription_dir = os.path.join(output_dir, f"transcription_{self.timestamp}")
         Path(output_dir).mkdir(parents=True, exist_ok=True)
+        Path(self.transcription_dir).mkdir(parents=True, exist_ok=True)
         
     def _convert_to_wav(self, input_path: str, output_path: str) -> None:
         """Convert video/audio to WAV format."""
@@ -89,7 +93,7 @@ class AudioProcessor:
         print("Transcribing audio...")
         
         for i, audio_path in enumerate(audio_paths, 1):
-            output_file = os.path.join(self.output_dir, f"transcription_{i}.txt")
+            output_file = os.path.join(self.transcription_dir, f"transcription_{i}.txt")
             print(f"Processing chunk {i}/{len(audio_paths)}")
             
             env = os.environ.copy()
@@ -111,6 +115,45 @@ class AudioProcessor:
             except Exception as e:
                 print(f"Error during transcription: {str(e)}")
                 print(f"Error type: {type(e)}")
+        
+        # After all transcriptions are done, merge them
+        self.merge_transcriptions()
+
+    def merge_transcriptions(self) -> None:
+        """Merge all transcription files into one with proper formatting."""
+        print("Merging transcriptions...")
+        
+        # Get all transcription files sorted by number
+        transcription_files = sorted(
+            [f for f in os.listdir(self.transcription_dir) if f.startswith("transcription_")],
+            key=lambda x: int(x.split("_")[1].split(".")[0])
+        )
+        
+        # Create merged file name with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        merged_file = os.path.join(self.output_dir, f"merged_transcription_{timestamp}.txt")
+        
+        with open(merged_file, 'w', encoding='utf-8') as outfile:
+            for i, fname in enumerate(transcription_files, 1):
+                file_path = os.path.join(self.transcription_dir, fname)
+                with open(file_path, 'r', encoding='utf-8') as infile:
+                    content = infile.read()
+                    
+                    # Extract only the relevant parts (speaker lines)
+                    cleaned_lines = []
+                    for line in content.split('\n'):
+                        # Skip technical lines and empty lines
+                        if "Speaker labeling enabled:" in line:
+                            continue
+                        if "Speaker" in line and ":" in line:
+                            cleaned_lines.append(line.strip())
+                    
+                    if cleaned_lines:
+                        outfile.write(f"Part {i}\n")
+                        outfile.write('\n'.join(cleaned_lines))
+                        outfile.write('\n\n')
+        
+        print(f"Merged transcription saved to: {merged_file}")
 
 def main():
     # Example usage

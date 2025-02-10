@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "audio-transcriber"
@@ -8,8 +8,8 @@ version = "0.1.0"
 description = "Audio extraction and transcription utility"
 requires-python = ">=3.8,<3.14"
 dependencies = [
-    "click>=8.0.0",
-    "tqdm>=4.65.0"
+    "tqdm>=4.65.0",
+    "ffmpeg-python>=0.2.0"
 ]
 
 [tool.setuptools.packages.find]
