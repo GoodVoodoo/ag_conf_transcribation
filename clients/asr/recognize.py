@@ -196,6 +196,5 @@ def recognize(
         click.echo("Response metadata:")
         print_metadata(response_iterator.initial_metadata())
 
-        for response_idx, response in enumerate(response_iterator, 1):
-            click.echo(f"\nResponse #{response_idx}:")
+        for response in response_iterator:
             print_recognize_response(response)

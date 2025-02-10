@@ -39,6 +39,7 @@ def print_genderage_result(genderage: stt_pb2.SpeakerGenderAgePrediction) -> Non
 def print_hypothesis(
     hypothesis: stt_pb2.SpeechRecognitionHypothesis,
     is_final: bool = True,
+    speaker_id: int = None
 ) -> None:
     transcript = None
     if hypothesis.normalized_transcript:
@@ -50,15 +51,11 @@ def print_hypothesis(
         start_end_time = ""
         if hypothesis.start_time_ms or hypothesis.end_time_ms:
             start_end_time = (
-                f" ({hypothesis.start_time_ms / 1000:05.2f}s-"
+                f"({hypothesis.start_time_ms / 1000:05.2f}s-"
                 f"{hypothesis.end_time_ms / 1000:05.2f}s)"
             )
 
-        msg = f'\tHypothesis{start_end_time}: "{transcript}" is_final: {is_final}'
-
-        if is_final:
-            msg += f", confidence: {hypothesis.confidence:.4g}"
-
+        msg = f'Speaker {speaker_id}. {start_end_time}: "{transcript}"'
         click.echo(msg)
 
     words = hypothesis.normalized_words or hypothesis.words
@@ -88,15 +85,13 @@ def print_recognize_response(
     result: stt_pb2.RecognizeResponse,
     consider_final: bool = False,
 ) -> None:
-    if result.channel:
-        click.echo(f"\tChannel: {result.channel}")
-
+    speaker_id = None
     if result.HasField("speaker_info") and result.speaker_info.speaker_id:
-        click.echo(f"\tSpeaker ID: {result.speaker_info.speaker_id}")
+        speaker_id = result.speaker_info.speaker_id
 
     if result.HasField("hypothesis"):
         is_final = consider_final or result.is_final
-        print_hypothesis(result.hypothesis, is_final)
+        print_hypothesis(result.hypothesis, is_final, speaker_id)
 
     if result.va_marks:
         print_va_marks(result.va_marks)

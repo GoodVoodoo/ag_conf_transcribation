@@ -164,6 +164,5 @@ def file_recognize(
         click.echo("Response metadata:")
         print_metadata(call.initial_metadata())
 
-        for idx, result in enumerate(response.response, 1):
-            click.echo(f"\nResult {idx}:")
+        for result in response.response:
             print_recognize_response(result, True)
