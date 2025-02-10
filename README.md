@@ -1,42 +1,179 @@
-# Audio Processing and Transcription Utility
+# Audio Transcriber
 
-This utility processes audio/video files and transcribes them using the ASR service. It can:
-1. Extract audio from MP4 files
-2. Convert audio to WAV format
-3. Split large audio files into chunks
-4. Transcribe audio with punctuation
-5. Save transcriptions to text files
+A Python utility for audio extraction and transcription with speaker labeling and punctuation.
+
+## Prerequisites for macOS
+
+1. **Python**: Requires Python 3.8 or newer
+   ```bash
+   brew install python@3.9
+   ```
+
+2. **FFmpeg**: Required for audio processing
+   ```bash
+   brew install ffmpeg
+   ```
+
+3. **Git**: For cloning the repository
+   ```bash
+   brew install git
+   ```
 
 ## Installation
 
-1. Make sure you have Python 3.8 or higher installed
-2. Install the package and its dependencies:
-```bash
-pip install .
-```
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd audio-transcriber
+   ```
+
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate
+   ```
+
+3. Install the package and its dependencies:
+   ```bash
+   pip install .
+   ```
+
+## Configuration
+
+1. Create a `config.ini` file in the project root (if not already present) with your API credentials:
+   ```ini
+   api_address = "grpc.audiogram-demo.mts.ai:443"
+   use_ssl = true
+   timeout = 60
+   client_id = "your-client-id"
+   client_secret = "your-client-secret"
+   iam_account = "demo"
+   iam_workspace = "default"
+   sso_url = "https://sso.dev.mts.ai"
+   realm = "audiogram-demo"
+   verify_sso = true
+   ```
 
 ## Usage
 
-Place your audio/video file in the project directory and run:
+You can process any audio/video file by providing its path as a parameter:
 
-```bash
-python audio_processor.py
-```
+1. Using the Python module:
+   ```bash
+   python -m audio_transcriber.audio_processor --input-file "path/to/your/file.mp4"
+   ```
 
-By default, it will process the file "jnr-cduk-irv (2023-03-06 17_15 GMT+3).mp4".
+   Or with the installed script:
+   ```bash
+   audio-transcriber --input-file "path/to/your/file.mp4"
+   ```
+
+2. Supported input formats:
+   - Video files (mp4, avi, mkv, etc.)
+   - Audio files (mp3, wav, m4a, etc.)
 
 The script will:
-1. Create an 'output' directory
-2. Extract audio if the input is a video file
-3. Convert the audio to WAV format if needed
-4. Split the audio into chunks if it's larger than 25MB
-5. Transcribe each chunk with punctuation
-6. Save the transcriptions in the output directory
+- Convert the input file to WAV format if necessary
+- Split large files into smaller chunks
+- Transcribe each chunk with speaker labeling
+- Merge all transcriptions into a single output file
 
 ## Output
 
-The script creates an 'output' directory containing:
-- Extracted audio (if input was video)
-- Converted WAV file (if input wasn't WAV)
-- Audio chunks (if splitting was necessary)
-- Transcription text files for each chunk 
+Transcriptions will be saved in the `output` directory:
+- Individual chunk transcriptions in a timestamped folder
+- Final merged transcription as `merged_transcription_TIMESTAMP.txt`
+
+## Troubleshooting
+
+1. If you encounter FFmpeg errors:
+   ```bash
+   brew update && brew upgrade ffmpeg
+   ```
+
+2. If you get SSL/certificate errors:
+   - Check your internet connection
+   - Verify your API credentials in `config.ini`
+   - Ensure you have the latest Python SSL certificates:
+   ```bash
+   /Applications/Python\ 3.9/Install\ Certificates.command
+   ```
+
+## Development
+
+For development work:
+1. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Unix/macOS
+   .\venv\Scripts\Activate.ps1  # On Windows
+   ```
+
+2. Install the package with development dependencies:
+   ```bash
+   pip install -e ".[dev]"
+   ```
+
+   This will install:
+   - black (code formatter)
+   - isort (import sorter)
+   - ruff (linter)
+   - mypy (type checker)
+
+3. Install pre-commit hooks:
+   ```bash
+   pre-commit install
+   ```
+
+## Testing
+
+1. Install the package with test dependencies:
+   ```bash
+   pip install -e ".[test]"
+   ```
+
+   This will install:
+   - pytest (testing framework)
+   - pytest-mock (mocking support)
+   - pytest-cov (coverage reporting)
+
+2. Run the tests:
+   ```bash
+   # Run all tests
+   python -m pytest tests/
+
+   # Run with verbose output
+   python -m pytest tests/ -v
+
+   # Run with coverage report
+   python -m pytest tests/ --cov=audio_transcriber
+   ```
+
+3. Manual Testing
+
+   Quick test with sample audio:
+   ```bash
+   # Download a sample audio file
+   curl -O https://www2.cs.uic.edu/~i101/SoundFiles/gettysburg.wav
+   
+   # Run the transcriber
+   python -m audio_transcriber.audio_processor --input-file gettysburg.wav
+   ```
+
+   Test with your own files:
+   ```bash
+   # For video file
+   python -m audio_transcriber.audio_processor --input-file "path/to/your/video.mp4"
+   
+   # For audio file
+   python -m audio_transcriber.audio_processor --input-file "path/to/your/audio.mp3"
+   ```
+
+4. Test Results
+   - Unit test results will show pass/fail status for each test
+   - Coverage report will show percentage of code covered by tests
+   - For manual testing, check the `output` directory for transcription results
+
+## License
+
+[Add your license information here] 

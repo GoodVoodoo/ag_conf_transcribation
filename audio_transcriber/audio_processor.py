@@ -4,6 +4,7 @@ from typing import List
 import subprocess
 from tqdm import tqdm
 from datetime import datetime
+import argparse
 
 class AudioProcessor:
     def __init__(self, input_file: str, output_dir: str = "output"):
@@ -156,15 +157,21 @@ class AudioProcessor:
         print(f"Merged transcription saved to: {merged_file}")
 
 def main():
-    # Example usage
-    input_file = "jnr-cduk-irv (2023-03-06 17_15 GMT+3).mp4"
-    processor = AudioProcessor(input_file)
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Process and transcribe audio/video files')
+    parser.add_argument('--input-file', type=str, required=True,
+                       help='Path to the input audio/video file')
+    args = parser.parse_args()
+
+    processor = AudioProcessor(args.input_file)
     
     # Convert to WAV if needed
-    if not input_file.endswith('.wav'):
+    if not args.input_file.endswith('.wav'):
         output_path = os.path.join(processor.output_dir, "input.wav")
-        processor._convert_to_wav(input_file, output_path)
+        processor._convert_to_wav(args.input_file, output_path)
         input_file = output_path
+    else:
+        input_file = args.input_file
     
     # Split if necessary
     audio_chunks = processor.split_audio(input_file)

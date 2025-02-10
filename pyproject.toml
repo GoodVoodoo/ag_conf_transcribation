@@ -12,6 +12,20 @@ dependencies = [
     "ffmpeg-python>=0.2.0"
 ]
 
+[project.optional-dependencies]
+test = [
+    "pytest>=7.0.0",
+    "pytest-mock>=3.10.0",
+    "pytest-cov>=4.0.0",
+]
+
+dev = [
+    "black>=22.3.0",
+    "isort>=5.10.1",
+    "ruff>=0.0.291",
+    "mypy>=1.0.0",
+]
+
 [tool.setuptools.packages.find]
 include = ["audio_transcriber*"]
 
