@@ -44,4 +44,7 @@ Thumbs.db
 
 # Additional files
 output/
-ffmpeg.zip 
+ffmpeg.zip
+
+# Configuration files with sensitive data
+config.ini 

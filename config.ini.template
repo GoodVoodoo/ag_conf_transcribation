@@ -1,7 +1,6 @@
 # All config keys are optional
 # Unnecessary config keys can be commented out or deleted
-# Settings from this file can be overridden using corresponding CLI argumen
-
+# Settings from this file can be overridden using corresponding CLI arguments
 
 # Sensitive data is loaded from environment variables
 
@@ -20,15 +19,14 @@ cert_chain_path = ""
 timeout = 60
 
 # Keycloak authentication credentials
-client_id = "audiogram-wer"
-client_secret = "hsTCUaQCTO4yRAZBKWNFc1qYpMY6vBkq"
-
+client_id = "<YOUR_CLIENT_ID>"
+client_secret = "<YOUR_CLIENT_SECRET>"
 
 # IAM additional credentials
-iam_account = "demo"
-iam_workspace = "default"
+iam_account = "<YOUR_IAM_ACCOUNT>"
+iam_workspace = "<YOUR_WORKSPACE>"
 
 # Keycloak root URL
 sso_url = "https://sso.dev.mts.ai"
 realm = "audiogram-demo"
-verify_sso = true
+verify_sso = true 

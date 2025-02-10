@@ -54,6 +54,37 @@ A Python utility for audio extraction and transcription with speaker labeling an
    verify_sso = true
    ```
 
+## Configuration Management
+
+The application uses a `config.ini` file for its settings. To protect sensitive data:
+
+1. Copy the template configuration:
+   ```bash
+   cp config.ini.template config.ini
+   ```
+
+2. Edit `config.ini` and fill in your values for:
+   - client_id
+   - client_secret
+   - iam_account
+   - iam_workspace
+
+**Security Notes:**
+- Never commit `config.ini` to git (it's already in `.gitignore`)
+- Use a secure password manager for storing and sharing credentials
+- The pre-commit hooks will help prevent accidentally committing sensitive data
+
+3. Pre-commit Setup (For Developers):
+   ```bash
+   pip install pre-commit
+   pre-commit install
+   ```
+   This will install hooks that prevent committing:
+   - Files containing secrets
+   - Private keys
+   - Large files
+   - Files with case conflicts
+
 ## Usage
 
 You can process any audio/video file by providing its path as a parameter:
