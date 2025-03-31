@@ -101,13 +101,15 @@ The application supports processing audio and video files (mp4, mp3, wav) and ge
 ### Basic Usage
 
 ```bash
-python -m audio_transcriber --input path/to/your/audio/file.mp3 --output-dir output
+python main.py path/to/your/audio/file.mp4 --output-dir output
 ```
 
 ### Command Line Arguments
 
-- `--input` or `-i`: Path to the input audio/video file (required)
-- `--output-dir` or `-o`: Directory to save the transcription results (default: 'output')
+- `input_file`: Path to the input audio/video file (positional argument, required)
+- `--output-dir`: Directory to save the transcription results (default: 'output')
+- `--add-summarization`: Generate a summary of the transcription using GPT-4o
+- `--config`: Path to the configuration file (default: 'config.ini')
 
 ### Supported Input Formats
 
@@ -136,3 +138,56 @@ export MAX_CHUNK_SIZE_MB=30
 ```
 
 Default value is 20MB if not specified.
+
+## Summarization Feature
+
+The application now supports generating summaries of transcribed conversations using OpenAI's GPT-4o model.
+
+### Usage
+
+To enable summarization, use the `--add-summarization` flag:
+
+```bash
+python main.py path/to/your/audio/file.mp4 --output-dir output --add-summarization
+```
+
+### Configuration
+
+For the summarization feature to work, you need to set your OpenAI API key in one of two ways:
+
+1. **Environment Variable**:
+   ```bash
+   # On Windows PowerShell
+   $env:OPENAI_API_KEY="your-openai-api-key"
+
+   # On Unix/macOS
+   export OPENAI_API_KEY="your-openai-api-key"
+   ```
+
+2. **Config File**:
+   Add the following section to your `config.ini` file:
+   ```ini
+   # OpenAI GPT settings
+   openai_api_key = "${OPENAI_API_KEY}"  # Will read from environment variable
+   openai_model = "gpt-4o"               # Model to use (default: gpt-4o)
+   openai_temperature = "0.3"            # Temperature setting (default: 0.3)
+   ```
+
+You can also customize the model and temperature settings through these methods. The application prioritizes environment variables over config file settings.
+
+### Output
+
+The summarization feature will:
+1. Process the full transcription using OpenAI's GPT-4o model
+2. Generate a concise summary highlighting key points from the conversation
+3. Save the summary to a file named `summary_YYYYMMDD_HHMMSS.txt` in the specified output directory
+
+### Summary Content
+
+The summary focuses on extracting:
+- Main discussion topics and context
+- Important decisions or conclusions
+- Key insights from each speaker
+- Action items mentioned during the conversation
+
+The summary is optimized for Russian language conversations and preserves important context and nuances.

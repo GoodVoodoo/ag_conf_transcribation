@@ -22,6 +22,13 @@ timeout = 60
 client_id = "<YOUR_CLIENT_ID>"
 client_secret = "<YOUR_CLIENT_SECRET>"
 
+# OpenAI GPT settings
+# These settings can be overridden by environment variables
+# OPENAI_API_KEY, OPENAI_MODEL, OPENAI_TEMPERATURE
+openai_api_key = "${OPENAI_API_KEY}"
+openai_model = "gpt-4o"
+openai_temperature = "0.3"
+
 # IAM additional credentials
 iam_account = "<YOUR_IAM_ACCOUNT>"
 iam_workspace = "<YOUR_WORKSPACE>"
