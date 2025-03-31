@@ -69,12 +69,21 @@ The application uses a `config.ini` file for its settings. To protect sensitive 
    - iam_account
    - iam_workspace
 
+3. Environment Variables (Optional):
+   - `MAX_CHUNK_SIZE_MB`: Maximum size in MB for audio chunks (default: 20)
+   ```bash
+   # Example: Set 30MB as maximum chunk size
+   export MAX_CHUNK_SIZE_MB=30  # On Unix/macOS
+   # or
+   $env:MAX_CHUNK_SIZE_MB=30    # On Windows PowerShell
+   ```
+
 **Security Notes:**
 - Never commit `config.ini` to git (it's already in `.gitignore`)
 - Use a secure password manager for storing and sharing credentials
 - The pre-commit hooks will help prevent accidentally committing sensitive data
 
-3. Pre-commit Setup (For Developers):
+4. Pre-commit Setup (For Developers):
    ```bash
    pip install pre-commit
    pre-commit install
@@ -87,124 +96,43 @@ The application uses a `config.ini` file for its settings. To protect sensitive 
 
 ## Usage
 
-You can process any audio/video file by providing its path as a parameter:
+The application supports processing audio and video files (mp4, mp3, wav) and generates transcriptions with speaker labeling and punctuation.
 
-1. Using the Python module:
-   ```bash
-   python -m audio_transcriber.audio_processor --input-file "path/to/your/file.mp4"
-   ```
+### Basic Usage
 
-   Or with the installed script:
-   ```bash
-   audio-transcriber --input-file "path/to/your/file.mp4"
-   ```
+```bash
+python -m audio_transcriber --input path/to/your/audio/file.mp3 --output-dir output
+```
 
-2. Supported input formats:
-   - Video files (mp4, avi, mkv, etc.)
-   - Audio files (mp3, wav, m4a, etc.)
+### Command Line Arguments
 
-The script will:
-- Convert the input file to WAV format if necessary
-- Split large files into smaller chunks
-- Transcribe each chunk with speaker labeling
-- Merge all transcriptions into a single output file
+- `--input` or `-i`: Path to the input audio/video file (required)
+- `--output-dir` or `-o`: Directory to save the transcription results (default: 'output')
 
-## Output
+### Supported Input Formats
 
-Transcriptions will be saved in the `output` directory:
-- Individual chunk transcriptions in a timestamped folder
-- Final merged transcription as `merged_transcription_TIMESTAMP.txt`
+- MP4 video files
+- MP3 audio files
+- WAV audio files
 
-## Troubleshooting
+### Output
 
-1. If you encounter FFmpeg errors:
-   ```bash
-   brew update && brew upgrade ffmpeg
-   ```
+The application will:
+1. Convert the input file to WAV format if needed
+2. Split the audio into chunks if necessary
+3. Transcribe the audio with speaker labeling and punctuation
+4. Save the results in the specified output directory
 
-2. If you get SSL/certificate errors:
-   - Check your internet connection
-   - Verify your API credentials in `config.ini`
-   - Ensure you have the latest Python SSL certificates:
-   ```bash
-   /Applications/Python\ 3.9/Install\ Certificates.command
-   ```
+### Environment Variables
 
-## Development
+You can configure the maximum chunk size for audio processing:
 
-For development work:
-1. Create and activate a virtual environment:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Unix/macOS
-   .\venv\Scripts\Activate.ps1  # On Windows
-   ```
+```bash
+# On Windows PowerShell
+$env:MAX_CHUNK_SIZE_MB=30
 
-2. Install the package with development dependencies:
-   ```bash
-   pip install -e ".[dev]"
-   ```
+# On Unix/macOS
+export MAX_CHUNK_SIZE_MB=30
+```
 
-   This will install:
-   - black (code formatter)
-   - isort (import sorter)
-   - ruff (linter)
-   - mypy (type checker)
-
-3. Install pre-commit hooks:
-   ```bash
-   pre-commit install
-   ```
-
-## Testing
-
-1. Install the package with test dependencies:
-   ```bash
-   pip install -e ".[test]"
-   ```
-
-   This will install:
-   - pytest (testing framework)
-   - pytest-mock (mocking support)
-   - pytest-cov (coverage reporting)
-
-2. Run the tests:
-   ```bash
-   # Run all tests
-   python -m pytest tests/
-
-   # Run with verbose output
-   python -m pytest tests/ -v
-
-   # Run with coverage report
-   python -m pytest tests/ --cov=audio_transcriber
-   ```
-
-3. Manual Testing
-
-   Quick test with sample audio:
-   ```bash
-   # Download a sample audio file
-   curl -O https://www2.cs.uic.edu/~i101/SoundFiles/gettysburg.wav
-   
-   # Run the transcriber
-   python -m audio_transcriber.audio_processor --input-file gettysburg.wav
-   ```
-
-   Test with your own files:
-   ```bash
-   # For video file
-   python -m audio_transcriber.audio_processor --input-file "path/to/your/video.mp4"
-   
-   # For audio file
-   python -m audio_transcriber.audio_processor --input-file "path/to/your/audio.mp3"
-   ```
-
-4. Test Results
-   - Unit test results will show pass/fail status for each test
-   - Coverage report will show percentage of code covered by tests
-   - For manual testing, check the `output` directory for transcription results
-
-## License
-
-[Add your license information here] 
+Default value is 20MB if not specified.

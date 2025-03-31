@@ -36,8 +36,13 @@ class AudioProcessor:
             print(f'Error during conversion: {str(e)}')
             raise e
 
-    def split_audio(self, audio_path: str, max_size_mb: int = 10) -> List[str]:
-        """Split audio into chunks if larger than max_size_mb."""
+    def split_audio(self, audio_path: str) -> List[str]:
+        """Split audio into chunks if larger than max_size_mb.
+        
+        The maximum size in MB is read from the MAX_CHUNK_SIZE_MB environment variable.
+        If not set, defaults to 20MB.
+        """
+        max_size_mb = int(os.getenv('MAX_CHUNK_SIZE_MB', '20'))
             
         file_size = os.path.getsize(audio_path) / (1024 * 1024)  # Convert to MB
         
