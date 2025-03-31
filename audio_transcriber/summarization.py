@@ -4,6 +4,46 @@ from datetime import datetime
 from openai import OpenAI
 from pathlib import Path
 
+class NoSectionConfigParser(configparser.ConfigParser):
+    """A ConfigParser that doesn't require section headers and auto-strips quotes."""
+    
+    def read(self, filenames, encoding=None):
+        """Read and parse a filename or a list of filenames."""
+        if isinstance(filenames, (str, os.PathLike)):
+            filenames = [filenames]
+        
+        for filename in filenames:
+            try:
+                with open(filename, encoding=encoding) as f:
+                    file_content = f.read()
+                
+                # Add a [DEFAULT] section header if none exists
+                if not file_content.strip().startswith('['):
+                    file_content = '[DEFAULT]\n' + file_content
+                
+                # Use string as file-like object
+                from io import StringIO
+                self.read_file(StringIO(file_content), filename)
+            except Exception as e:
+                print(f"Error reading {filename}: {e}")
+                continue
+        
+        # Strip quotes from all values after reading
+        self._strip_quotes_from_values()
+        
+        return self._sections
+    
+    def _strip_quotes_from_values(self):
+        """Strip quotes from all string values in all sections."""
+        for section in self.sections() + ['DEFAULT']:
+            for key in self[section]:
+                value = self[section][key]
+                if isinstance(value, str):
+                    # Strip surrounding quotes (both single and double quotes)
+                    if (value.startswith('"') and value.endswith('"')) or \
+                       (value.startswith("'") and value.endswith("'")):
+                        self[section][key] = value[1:-1]
+
 class TranscriptionSummarizer:
     """Summarizes transcriptions using OpenAI's GPT-4o model."""
     
@@ -13,11 +53,16 @@ class TranscriptionSummarizer:
         self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
         # Load configuration
-        self.config = configparser.ConfigParser()
+        self.config = NoSectionConfigParser()
         
         # Check if config file exists
         if os.path.exists(config_file):
-            self.config.read(config_file)
+            try:
+                self.config.read(config_file)
+                print(f"Successfully loaded config from {config_file}")
+            except Exception as e:
+                print(f"Error reading config file: {str(e)}")
+                print("Using default configuration and environment variables")
         
         # Get OpenAI parameters from config or environment variables
         self.api_key = self._get_config_value("openai_api_key", "OPENAI_API_KEY")
@@ -62,6 +107,13 @@ class TranscriptionSummarizer:
         # If still not found, use default
         if not value:
             value = default
+        
+        # For debugging
+        if config_key == "openai_api_key" and value:
+            masked_key = value[:8] + "..." + value[-4:] if len(value) > 12 else "***"
+            print(f"Using API key: {masked_key}")
+        else:
+            print(f"Config {config_key}: {value}")
             
         return value
     
