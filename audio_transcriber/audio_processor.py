@@ -107,7 +107,7 @@ class AudioProcessor:
             
             cmd = ["python", "-m", "clients.main", "recognize", "file",
                   "--audio-file", audio_path, "--config", "config.ini",
-                  "--enable-punctuator", "--enable-speaker-labeling"]
+                  "--model", "e2e-v3", "--enable-punctuator", "--timeout", "120"]
             
             try:
                 result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', env=env)
